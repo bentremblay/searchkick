@@ -352,11 +352,13 @@ module Searchkick
             queries.concat(queries_to_add)
           end
 
-          payload = {
+          payload = []
+          payload << {
             dis_max: {
               queries: queries
             }
           }
+          payload << { nested: options[:nested] } if options[:nested]
 
           if conversions_fields.present? && options[:conversions] != false
             shoulds = []
@@ -433,17 +435,6 @@ module Searchkick
 
         # filters
         filters = where_filters(options[:where])
-
-        # nested filter
-        nested_filter_value = options[:nested]
-        if nested_filter_value && options[:where].any?
-          filters << {
-            nested: {
-              path: nested_filter_value[:path],
-              filter: { and: where_filters(nested_filter_value[:where]) }
-            }
-          }
-        end
 
         set_filters(payload, filters) if filters.any?
 
